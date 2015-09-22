@@ -1,3 +1,17 @@
+   Ursache Andrei - 2015
+	
+	----------------------------------------------------------------------------
+	Proiect anul 2, al doilea semestru, la materia Protocoale de Comunicatie.
+	Limbaj ales: C
+	
+	############################     ATENTIE !!!    ############################
+	Temele sunt verificate pe VMChecker. Nu incercati sa copiati codul, deoarece
+	VMChecker verifica si sursele existente pe GitHub. In plus, fiecare tema va 
+	ajuta foarte mult daca incercati sa o realizati singuri. Asa ca, daca ai
+	ajuns aici pentru a cauta o tema, iti recomand calduros sa inchizi tab-ul cu 
+	GitHub si sa te apuci singur de ea. Spor!
+	----------------------------------------------------------------------------
+   
     Ursache Andrei - 322CA - 28 martie 2015
     
     Aspecte generale:
@@ -104,20 +118,6 @@ server si am evitat pe cat posibil scrierea redundanta de cod.
 
     (!!!)   Alte detalii referitoare la implementarea temei se regasesc in 
             fisierul sursa.
-
-
-    Nota personala:
-    
-        Una din temele la care am muncit cel mai mult de pena acum si,
-    de asemenea, una din cele mai mari. A fost o tema interesanta, in care am
-    luat "contact" pentru prima data cu functionarea unui server (mai aplu 
-    decat la laborator). Din cele doua zile in care am lucrat la ea, cea mai
-    mare parte din timp a fost acordata funciilor din C si a utilizarii acestora,
-    deoarece tema, in idee, nu a fost foarte complicata. Dupa aceasta am stat
-    inca o zi intreaga incercad sa o fac sa functioneze si pe Vmchecker, avand o
-    eroare "stack smashing" pe care nu am putut sa o identific pana cand nu 
-    am rulat tema pe o masina virtuala de la facultate.
-    
-    
+            
     Andrei Ursache
 
