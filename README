@@ -1,0 +1,123 @@
+    Ursache Andrei - 322CA - 28 martie 2015
+    
+    Aspecte generale:
+
+    In realizarea temei am folosit scheletul de cod pus la dispozite si nu am
+modificat structura acestuia ci doar am venit cu implementari.
+    In realizarea programului, am incercat pe cat posibil sa mentin o comportare
+generala a acestuia, idiferent de modul in care ruleaza. Astfel, funciile care 
+indeplinesc fiecare comanda valida a server-ului nu sunt duplicate in cod pentru
+fiecare mod in parte, ci au o singura implementare.
+
+    
+    Ideea generala:
+    
+    Programul primeste ca argument in linia de comanda modul in care 
+functioneaza (exceptie "simple" care este default).
+    Intr-o bucla infinita serverul asteapta comenzi de la client. Fiecare 
+comanda este primita (decodificata si corectata daca este cazul), dupa care este
+indeplinita cu ajutorul functiilor specifice. Comenzile ls, cp si sn implica un 
+"dialog" intre server si client iar acesta este realizat prin trimiterea si 
+primirea pachetelor codificate specific in functie de modul in care ruleaza 
+serverul.
+    Dupa fiecare realizare a unei comenzi serverul asteapta o noua comanda pana 
+in momentul in care primeste "exit exit".
+
+
+    Structura programului si implementare:
+
+    Comenzile primite de server sunt parsate cu ajutorul functiei 
+"parse_command" care separa numele comenzii de argumentul ei. Dupa identificarea
+ei se apeleaza functia specifica respectivei comenzi.
+    In general, majoritatea funciilor primesc si argumentul "mode", deoarece
+sunt tratate separat actiunile specifice fiecarui caz in parte.
+    Pentru o vizualizare mai buna am creat functii de trimitere si primire a
+feedback-ului: send_ACK, send_NACK, receive_feedback, ce trimit pachetele
+in functie de modul de rulare. Pentru ACK si NACK m-am bazat pe faptul ca 
+dimensiunea mesajelor nu poate fi corupta.
+
+    Pentru trimiterea unui mesaj am creat functia "server_send_message" ce va 
+incerca sa trimita mesajul pana cand primeste ACK de la client.
+    Pentru primirea unui mesaj am creat functia "receive" care primeste ca 
+argument modul in care mesajul trebuie sa fie primit. In cazul "simple" mesajul
+este primit si nu se verifica daca datele acestuia au fost corupe, trimitandu-se
+direct ACK. In cazul "parity" se verifica paritatea intregului mesaj si daca 
+aceasta este gresita se trimite NACK pana cand se va primi de la client un mesaj
+cu paritate corecta. In cazul "hamming" se corecteaza mesajul (daca este cazul) 
+prin algoritmul prezentat in curs.
+    Aceasta functie generala de primire a unui mesaj intoarce intr-un final, 
+indiferent de mod, mesajul corect si decodificat.
+    
+    Codificarea / Decodificarea fiecarui mesaj se realizeaza cu functiile coder 
+/ decoder ce primesc modul de rulare ca argument si apeleaza la randul lor 
+functiile specifice de codificare / decodificare. Ele returneaza lungimea 
+mesajului codificat / decodificat si sunt utilizate la fiecare trimitere / 
+primire de pachet.
+    Pentru modul simple, ele returneaza chiar lungimea mesajului dat si nu il
+modifica. La "parity" se introduce primul bit, bitul de paritate, ca fiind suma
+modulo 2 a celorlalti biti, iar pentru decodificare (cand a fost deja primit 
+corect) se ignora acest bit din mesaj si se returneaza lungimea - 1. La 
+"hamming" pentru decodificare, se extrag din mesaj doar bitii mesajului real si 
+se obtine lungime/2. In cazul codificarii, am folosit 4 biti de control:
+    
+    mesaj initial: 
+    
+    0   1   2   3   4   5   6   7 (index) 
+    1   1   1   1   1   1   1   1 (valoare)
+                   
+    se formeaza cuvantul si se insereaza bitii de control (0, initial):
+    
+    _   _   _   _   c   c   _   c | _   _   _   _   c   _   _   _  (control)
+    0   1   2   3   4   5   6   7 | 0   1   2   3   4   5   6   7  (index)
+    0   0   0   0   0   0   1   0 | 1   1   1   1   0   1   1   1  (valoare)
+    
+    apoi se seteaza bitii de control cu ajutorul functiei "get_control_sum":
+    
+    _   _   _   _   c   c   _   c | _   _   _   _   c   _   _   _  (control)
+    0   1   2   3  |4| |5|  6  |7|| 0   1   2   3  |4|  5   6   7  (index)
+    0   0   0   0  |1| |1|  1  |0|| 1   1   1   1  |0|  1   1   1  (valoare)
+    
+    
+    Dupa identificarea unei comenzi, programul apeleaza funciia specifica ei:
+    
+    "cd_command": Cu ajutorul functiei "chdir" se schimba folder-ul actual.
+    
+    "ls_command": Se deschide folderul dat ca argument. Cu functia 
+"count_entries" se numara cate intrari se afla folderul respectiv si se trimite
+un mesaj cu numarul lor. Apoi, pentru fiecare intrare in parte, se transmite un 
+mesaj cu numele lor.
+
+    "cp_command": Se deterimina dimensiunea fisierului dat cu functia ftell si 
+se trimite un pachet cu aceasta. Apoi, se transmit pachete pana cand se 
+epuizeaza continutul fisierului. In functie de mod, codarea se va face diferit.
+
+    "sn_command": Se primeste dimensiunea fisierului. Apoi, se primesc pachetele
+corespunzatoare continutului pana cand se primeste fisierul in totalitate.
+
+    Mentionez ca am incercat sa gestionez toate situatiile de eroare ce pot sa 
+apara din cauza utilizatorului (lipsa drepturilor de acces, fisiere inexistente)
+prin iesiri din program si afisarea unor mesaje de eroare.
+
+    Astfel, am incercat sa tratez cat de general se poate functionarea acestui
+server si am evitat pe cat posibil scrierea redundanta de cod.
+    
+
+    (!!!)   Alte detalii referitoare la implementarea temei se regasesc in 
+            fisierul sursa.
+
+
+    Nota personala:
+    
+        Una din temele la care am muncit cel mai mult de pena acum si,
+    de asemenea, una din cele mai mari. A fost o tema interesanta, in care am
+    luat "contact" pentru prima data cu functionarea unui server (mai aplu 
+    decat la laborator). Din cele doua zile in care am lucrat la ea, cea mai
+    mare parte din timp a fost acordata funciilor din C si a utilizarii acestora,
+    deoarece tema, in idee, nu a fost foarte complicata. Dupa aceasta am stat
+    inca o zi intreaga incercad sa o fac sa functioneze si pe Vmchecker, avand o
+    eroare "stack smashing" pe care nu am putut sa o identific pana cand nu 
+    am rulat tema pe o masina virtuala de la facultate.
+    
+    
+    Andrei Ursache
+
